@@ -1,5 +1,5 @@
 {
   "version": 2,
-  "builds": [{ "src": "backend/api/add-bill.js", "use": "@vercel/node" }],
+  "builds": [{ "src": "api/add-bill.js", "use": "@vercel/node" }],
   "routes": [{ "src": "/api/(.*)", "dest": "/backend/api/$1" }]
 }
