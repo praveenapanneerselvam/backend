@@ -24,16 +24,28 @@ const billSchema = new mongoose.Schema({
 
 let Bill;
 
-async function connectDB() {
-  if (conn == null) {
-    conn = await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    Bill = mongoose.models.Bill || mongoose.model('Bill', billSchema);
+module.exports = async (req, res) => {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*'); // Allow all origins
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // Handle preflight request (OPTIONS)
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
   }
-  return conn;
-}
+
+  // Connect to DB and handle POST
+  await connectDB();
+  try {
+    const bill = new Bill(req.body);
+    await bill.save();
+    res.status(201).json({ message: 'Bill saved successfully!' });
+  } catch (error) {
+    console.error("Error saving bill:", error.message);
+    res.status(400).json({ error: error.message });
+  }
+};
 
 module.exports = async (req, res) => {
   if (req.method === 'POST') {
