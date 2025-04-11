@@ -38,10 +38,17 @@ async function connectDB() {
 module.exports = async (req, res) => {
   if (req.method === 'POST') {
     await connectDB();
-    const bill = new Bill(req.body);
-    await bill.save();
-    res.status(201).json({ message: 'Bill saved successfully!' });
+    console.log("Received Bill:", req.body); // 🔍 Add this
+    try {
+      const bill = new Bill(req.body);
+      await bill.save();
+      res.status(201).json({ message: 'Bill saved successfully!' });
+    } catch (error) {
+      console.error("Error saving bill:", error.message);
+      res.status(400).json({ error: error.message });
+    }
   } else {
     res.status(405).json({ message: 'Method Not Allowed' });
   }
 };
+
