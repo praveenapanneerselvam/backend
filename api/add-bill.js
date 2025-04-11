@@ -1,47 +1,35 @@
+const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors');
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-let conn = null;
+// Example route
+app.post('/api/add-bill', async (req, res) => {
+  const { billNumber, customer, totalAmount, dateTime, notes, type, repeat, cart } = req.body;
+  const newBill = new Bill({
+    billNumber,
+    customer,
+    totalAmount,
+    dateTime,
+    notes,
+    type,
+    repeat,
+    cart
+  });
 
-const uri = process.env.MONGO_URI;
-
-const billSchema = new mongoose.Schema({
-  billNumber: String,
-  customer: {
-    name: String,
-  },
-  totalAmount: Number,
-  dateTime: String,
-  notes: String,
-  type: String,
-  repeat: String,
-  cart: [
-    {
-      product: String,
-      price: Number,
-    },
-  ],
+  try {
+    await newBill.save();
+    res.status(201).json({ message: 'Bill added successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error adding bill', error: err.message });
+  }
 });
 
-let Bill;
+// MongoDB connection setup
+mongoose.connect('mongodb+srv://praveena:praveena19@paytrack.y4owi.mongodb.net/billing_db?retryWrites=true&w=majority&appName=paytrack', { useNewUrlParser: true, useUnifiedTopology: true });
 
-async function connectDB() {
-  if (conn == null) {
-    conn = await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    Bill = mongoose.models.Bill || mongoose.model('Bill', billSchema);
-  }
-  return conn;
-}
-
-module.exports = async (req, res) => {
-  if (req.method === 'POST') {
-    await connectDB();
-    const bill = new Bill(req.body);
-    await bill.save();
-    res.status(201).json({ message: 'Bill saved successfully!' });
-  } else {
-    res.status(405).json({ message: 'Method Not Allowed' });
-  }
-};
+app.listen(5000, () => {
+  console.log('Server running on port 5000');
+});
